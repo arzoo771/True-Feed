@@ -5,13 +5,36 @@ var message = document.getElementById('message');
 var truthFeed = document.getElementById('truthFeed');
 
 var today = new Date().toISOString().split('T')[0];
-
 var saved = JSON.parse(localStorage.getItem('truth')) || {};
 
-if (saved.date === today) {
+function disableInputs() {
   truthInput.disabled = true;
   nameInput.disabled = true;
   submitBtn.disabled = true;
+}
+
+function addTruthToFeed(truth, isTop) {
+  var div = document.createElement('div');
+  div.className = 'truthCard';
+  div.innerHTML = '<p>' + escapeHtml(truth.text) + '</p>' +
+                  '<div class="name">— ' + escapeHtml(truth.name) + '</div>';
+
+  if (isTop) {
+    truthFeed.insertBefore(div, truthFeed.firstChild);
+  } else {
+    truthFeed.appendChild(div);
+  }
+}
+
+// Simple escape to prevent HTML injection
+function escapeHtml(text) {
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+if (saved.date === today) {
+  disableInputs();
   message.textContent = "You've already shared your truth today.";
   addTruthToFeed(saved, true);
 }
@@ -21,6 +44,7 @@ submitBtn.addEventListener('click', function () {
   var name = nameInput.value.trim();
 
   if (!truth) {
+    message.style.color = 'red';
     message.textContent = "Please write your truth.";
     return;
   }
@@ -32,27 +56,11 @@ submitBtn.addEventListener('click', function () {
   };
 
   localStorage.setItem('truth', JSON.stringify(truthObj));
-
   addTruthToFeed(truthObj, true);
-
-  truthInput.disabled = true;
-  nameInput.disabled = true;
-  submitBtn.disabled = true;
+  disableInputs();
+  message.style.color = 'green';
   message.textContent = "Thank you for sharing your truth.";
 });
-
-function addTruthToFeed(truth, isTop) {
-  var div = document.createElement('div');
-  div.className = 'truthCard';
-  div.innerHTML = '<p>' + truth.text + '</p>' +
-                  '<div class="name">— ' + truth.name + '</div>';
-
-  if (isTop) {
-    truthFeed.insertBefore(div, truthFeed.firstChild);
-  } else {
-    truthFeed.appendChild(div);
-  }
-}
 
 var sampleTruths = [
   "I pretend to be okay more than I should.",
